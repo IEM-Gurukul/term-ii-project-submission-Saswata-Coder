@@ -8,4 +8,9 @@ public class Bid {
         this.buyer = buyer;
         this.amount = amount;
     }
+
+    @Override
+    public String toString() {
+        return buyer.getUsername() + " bid ₹" + amount;
+    }
 }

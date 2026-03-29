@@ -14,18 +14,26 @@ public class Item {
         this.bidHistory = new ArrayList<>();
     }
 
-    public void placeBid(Buyer buyer, double amount) {
+    public boolean placeBid(Buyer buyer, double amount) {
         if (amount > highestBid) {
             highestBid = amount;
             highestBidder = buyer;
             bidHistory.add(new Bid(buyer, amount));
-        } else {
-            System.out.println("Bid too low!");
+            return true;
         }
+        return false;
     }
 
     public String getDetails() {
-        return name + " | Highest Bid: " + highestBid +
-               " | Bidder: " + (highestBidder != null ? highestBidder.getUsername() : "None");
+        return name + " | Highest Bid: ₹" + highestBid +
+                " | Bidder: " + (highestBidder != null ? highestBidder.getUsername() : "None");
+    }
+
+    public String getBidHistory() {
+        StringBuilder history = new StringBuilder();
+        for (Bid bid : bidHistory) {
+            history.append(bid.toString()).append("\n");
+        }
+        return history.toString();
     }
 }

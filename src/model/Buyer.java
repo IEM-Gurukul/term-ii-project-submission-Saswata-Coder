@@ -6,7 +6,7 @@ public class Buyer extends User {
         super(username);
     }
 
-    public void placeBid(Item item, double amount) {
-        item.placeBid(this, amount);
+    public boolean placeBid(Item item, double amount) {
+        return item.placeBid(this, amount);
     }
 }
