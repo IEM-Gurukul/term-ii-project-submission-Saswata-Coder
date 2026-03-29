@@ -39,16 +39,8 @@ incorrect user information.
 
 
 ## Proposed Architecture Description
-|      UI Layer        |
-|  (Swing Interfaces)  |
-           |
-           ↓
-|    Service Layer     |
-|   (Business Logic)   |
-           |
-           ↓
-|    Model Layer       |
-|   (Data & Objects)   |
+
+| UI Layer (Swing Interfaces) | ------> | Service Layer (Business Logic) | ------> | Model Layer (Data & Objects) |
 
 1️⃣ UI Layer 
   Files:
@@ -61,6 +53,7 @@ incorrect user information.
         Bid history
         Current user
     - Handles user interaction (buttons, fields)
+    
 2️⃣ Service Layer (Business Logic Layer)
   File:
     - AuctionService.java
@@ -70,6 +63,7 @@ incorrect user information.
       Items list
       Auction flow
     - Acts as bridge between UI and Model
+    
 3️⃣ Model Layer (Core Data Layer)
   Files:
     - User.java 
@@ -90,9 +84,11 @@ incorrect user information.
 ## How to Run
 1️⃣ Clone Repository
 git clone [https://github.com/your-username/online-auction-system.git](https://github.com/IEM-Gurukul/term-ii-project-submission-Saswata-Coder)
+
 2️⃣ Open in VS Code
 Open folder in VS Code
 Install Java Extension Pack
+
 3️⃣ Run the Application
 Open Main.java
 Right-click → Run
