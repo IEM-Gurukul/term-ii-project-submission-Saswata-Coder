@@ -5,56 +5,70 @@ import service.AuctionService;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
+import java.util.HashMap;
 
 public class AuctionUI {
     private AuctionService service = new AuctionService();
     private JTextArea historyArea;
     private JLabel itemLabel;
-    private JLabel currentUserLabel;
+    private JLabel timerLabel;
+
     private Buyer currentBuyer;
+    private HashMap<String, Buyer> buyers = new HashMap<>();
+
+    private JComboBox<String> userDropdown;
+
+    private int timeLeft = 15;
+    private Timer timer;
 
     public AuctionUI(String username) {
 
         JFrame frame = new JFrame("Online Auction System");
-        frame.setSize(650, 450);
+        frame.setSize(750, 500);
         frame.setLayout(new BorderLayout());
 
-        // Initialize buyer
+        // INITIAL USER
         currentBuyer = new Buyer(username);
+        buyers.put(username, currentBuyer);
 
+        // ITEM
         Item item1 = new Item("Laptop", 50000);
         service.addItem(item1);
 
         // TOP PANEL
-        JPanel topPanel = new JPanel(new GridLayout(2, 1));
+        JPanel topPanel = new JPanel(new GridLayout(4, 1));
 
         itemLabel = new JLabel(item1.getDetails(), SwingConstants.CENTER);
         itemLabel.setFont(new Font("Arial", Font.BOLD, 16));
 
-        currentUserLabel = new JLabel("Current User: " + currentBuyer.getUsername(), SwingConstants.CENTER);
-        currentUserLabel.setForeground(Color.BLUE);
+        timerLabel = new JLabel("Time Left: 15s", SwingConstants.CENTER);
+        timerLabel.setForeground(Color.RED);
+
+        // USER INPUT FIELD
+        JTextField userField = new JTextField(10);
+        JButton addUserBtn = new JButton("Add / Switch User");
+
+        // DROPDOWN
+        userDropdown = new JComboBox<>();
+        userDropdown.addItem(username);
+
+        JPanel userPanel = new JPanel();
+        userPanel.add(new JLabel("Enter Username: "));
+        userPanel.add(userField);
+        userPanel.add(addUserBtn);
+        userPanel.add(userDropdown);
 
         topPanel.add(itemLabel);
-        topPanel.add(currentUserLabel);
+        topPanel.add(timerLabel);
+        topPanel.add(userPanel);
 
-        // CENTER PANEL (History)
+        // CENTER (History)
         historyArea = new JTextArea();
         historyArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(historyArea);
 
-        // RIGHT PANEL (Switch User)
-        JPanel rightPanel = new JPanel();
-        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-
-        JTextField userField = new JTextField(10);
-        JButton switchBtn = new JButton("Switch User");
-
-        rightPanel.add(new JLabel("Change User:"));
-        rightPanel.add(userField);
-        rightPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        rightPanel.add(switchBtn);
-
-        // BOTTOM PANEL (Bid)
+        // BOTTOM (Bid Panel)
         JPanel bottomPanel = new JPanel();
 
         JTextField bidField = new JTextField(10);
@@ -64,19 +78,57 @@ public class AuctionUI {
         bottomPanel.add(bidField);
         bottomPanel.add(bidBtn);
 
-        // SWITCH USER
-        switchBtn.addActionListener(e -> {
-            String newUser = userField.getText().trim();
-            if (!newUser.isEmpty()) {
-                currentBuyer = new Buyer(newUser);
-                currentUserLabel.setText("Current User: " + newUser);
-            } else {
+        // ADD / SWITCH USER
+        addUserBtn.addActionListener(e -> {
+            String name = userField.getText().trim();
+
+            if (name.isEmpty()) {
                 JOptionPane.showMessageDialog(frame, "Enter valid username!");
+                return;
+            }
+
+            if (!buyers.containsKey(name)) {
+                Buyer newBuyer = new Buyer(name);
+                buyers.put(name, newBuyer);
+                userDropdown.addItem(name);
+            }
+
+            currentBuyer = buyers.get(name);
+            userDropdown.setSelectedItem(name);
+        });
+
+        // DROPDOWN SWITCH
+        userDropdown.addActionListener(e -> {
+            String selectedUser = (String) userDropdown.getSelectedItem();
+            currentBuyer = buyers.get(selectedUser);
+        });
+
+        // TIMER
+        timer = new Timer(1000, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                timeLeft--;
+                timerLabel.setText("Time Left: " + timeLeft + "s");
+
+                if (timeLeft <= 0) {
+                    timer.stop();
+                    item1.endAuction();
+
+                    JOptionPane.showMessageDialog(frame,
+                            "Auction Ended!\nWinner: " + item1.getWinner());
+                }
             }
         });
 
-        // PLACE BID
+        timer.start();
+
+        // BID BUTTON
         bidBtn.addActionListener(e -> {
+
+            if (item1.isAuctionEnded()) {
+                JOptionPane.showMessageDialog(frame, "Auction already ended!");
+                return;
+            }
+
             try {
                 double amount = Double.parseDouble(bidField.getText());
 
@@ -85,6 +137,11 @@ public class AuctionUI {
                 if (success) {
                     itemLabel.setText(item1.getDetails());
                     historyArea.setText(item1.getBidHistory());
+
+                    // RESET TIMER AFTER EACH BID
+                    timeLeft = 15;
+                    timerLabel.setText("Time Left: " + timeLeft + "s");
+
                 } else {
                     JOptionPane.showMessageDialog(frame, "Bid too low!");
                 }
@@ -97,7 +154,6 @@ public class AuctionUI {
         // ADD COMPONENTS
         frame.add(topPanel, BorderLayout.NORTH);
         frame.add(scrollPane, BorderLayout.CENTER);
-        frame.add(rightPanel, BorderLayout.EAST);
         frame.add(bottomPanel, BorderLayout.SOUTH);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

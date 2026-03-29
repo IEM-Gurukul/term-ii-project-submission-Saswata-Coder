@@ -7,6 +7,7 @@ public class Item {
     private double highestBid;
     private Buyer highestBidder;
     private ArrayList<Bid> bidHistory;
+    private boolean auctionEnded = false;
 
     public Item(String name, double startingPrice) {
         this.name = name;
@@ -15,6 +16,8 @@ public class Item {
     }
 
     public boolean placeBid(Buyer buyer, double amount) {
+        if (auctionEnded) return false;
+
         if (amount > highestBid) {
             highestBid = amount;
             highestBidder = buyer;
@@ -22,6 +25,19 @@ public class Item {
             return true;
         }
         return false;
+    }
+
+    public void endAuction() {
+        auctionEnded = true;
+    }
+
+    public boolean isAuctionEnded() {
+        return auctionEnded;
+    }
+
+    public String getWinner() {
+        if (highestBidder == null) return "No bids";
+        return highestBidder.getUsername() + " won with ₹" + highestBid;
     }
 
     public String getDetails() {
